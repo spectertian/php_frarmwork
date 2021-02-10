@@ -7,6 +7,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing;
 
+use Symfony\Component\HttpKernel;
 
 function render_template($request)
 {
@@ -25,50 +26,22 @@ $context->fromRequest($request);
 $matcher = new Routing\Matcher\UrlMatcher($routes, $context);
 
 
-//try {
-//    extract($matcher->match($request->getPathInfo()), EXTR_SKIP);
-//    ob_start();
-//    include sprintf(__DIR__.'/../src/pages/%s.php', $_route);
-//
-//    $response = new Response(ob_get_clean());
-//} catch (Routing\Exception\ResourceNotFoundException $exception) {
-//    $response = new Response('Not Found', 404);
-//} catch (Exception $exception) {
-//    $response = new Response('An error occurred', 500);
-//}
-
-
-$routes->add('hello', new Routing\Route('/hello/{name}', [
-    'name' => 'World',
-    '_controller' => 'render_template',
-]));
+$controllerResolver = new HttpKernel\Controller\ControllerResolver();
+$argumentResolver = new HttpKernel\Controller\ArgumentResolver();
 
 
 try {
     $request->attributes->add($matcher->match($request->getPathInfo()));
-    $response = call_user_func('render_template', $request);
+
+    $controller = $controllerResolver->getController($request);
+    $arguments = $argumentResolver->getArguments($request, $controller);
+
+    $response = call_user_func_array($controller, $arguments);
 } catch (Routing\Exception\ResourceNotFoundException $exception) {
     $response = new Response('Not Found', 404);
 } catch (Exception $exception) {
     $response = new Response('An error occurred', 500);
 }
-//$map = [
-//    '/hello' => 'hello',
-//    '/bye'   => 'bye',
-//];
-//
-//
-//$path = $request->getPathInfo();
-//if (isset($map[$path])) {
-//    ob_start();
-//    extract($request->query->all(), EXTR_SKIP);
-//
-//    include sprintf(__DIR__.'/../src/pages/%s.php', $map[$path]);
-//    $response = new Response(ob_get_clean());
-//
-//} else {
-//    $response = new Response('Not Found', 404);
-//
-//}
+
 
 $response->send();

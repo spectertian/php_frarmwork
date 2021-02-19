@@ -1,6 +1,9 @@
 <?php
 
 // framework/front.php
+var_dump(php_ini_loaded_file(), php_ini_scanned_files());
+
+phpinfo();exit;
 require_once __DIR__.'/../vendor/autoload.php';
 
 use Symfony\Component\HttpFoundation\Request;

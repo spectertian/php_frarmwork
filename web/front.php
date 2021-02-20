@@ -31,15 +31,20 @@ $dispatcher = new EventDispatcher();
 $dispatcher->addSubscriber(new Simplex\ContentLengthListener());
 $dispatcher->addSubscriber(new Simplex\GoogleListener());
 
-$controllerResolver = new ControllerResolver();
-$argumentResolver   = new ArgumentResolver();
 
 $controllerResolver = new HttpKernel\Controller\ControllerResolver();
 $argumentResolver   = new HttpKernel\Controller\ArgumentResolver();
 
 
-$framework = new Simplex\Framework($matcher, $controllerResolver, $argumentResolver);
-$response  = $framework->handle($request);
+$framework = new Simplex\Framework($dispatcher, $matcher, $controllerResolver, $argumentResolver);
+$framework = new HttpKernel\HttpCache\HttpCache(
+    $framework,
+    new HttpKernel\HttpCache\Store(__DIR__.'/../cache'),
+    new HttpKernel\HttpCache\Esi(),
+    ['debug' => true]
+);
+
+$response = $framework->handle($request);
 
 
 $response->send();

@@ -9,9 +9,10 @@ use Symfony\Component\HttpKernel\Controller\ControllerResolver;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 use Symfony\Component\Routing\Matcher\UrlMatcher;
 use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\HttpKernel\HttpKernelInterface;
 
 
-class Framework
+class Framework implements HttpKernelInterface
 {
     private $matcher;
     private $controllerResolver;
@@ -19,7 +20,7 @@ class Framework
     private $dispatcher;
 
 
-    public function __construct(UrlMatcher $matcher, ControllerResolver $controllerResolver, ArgumentResolver $argumentResolver, EventDispatcher $dispatcher)
+    public function __construct(EventDispatcher $dispatcher, UrlMatcher $matcher, ControllerResolver $controllerResolver, ArgumentResolver $argumentResolver)
     {
         $this->matcher            = $matcher;
         $this->controllerResolver = $controllerResolver;
@@ -27,8 +28,9 @@ class Framework
         $this->dispatcher         = $dispatcher;
     }
 
-    public function handle(Request $request)
-    {
+    public function handle(
+        Request $request, $type = HttpKernelInterface::MASTER_REQUEST, $catch = true
+    ) {
         $this->matcher->getContext()->fromRequest($request);
 
         try {
